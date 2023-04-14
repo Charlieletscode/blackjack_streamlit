@@ -7,8 +7,8 @@ card_images = {}
 
 # Define the card deck
 suits = ['hearts', 'diamonds', 'clubs', 'spades']
-card_deck = ['ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king']
-card_values = {'ace': 11, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'jack': 10, 'queen': 10, 'king': 10}
+card_deck = ['Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King']
+card_values = {'Ace': 11, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'Jack': 10, 'Queen': 10, 'King': 10}
 
 for suit in suits:
     for rank in card_deck:
@@ -26,20 +26,73 @@ with open(filename, 'rb') as f:
 def calculate_hand(hand):
     total = 0
     for card in hand:
-        total += card_values[card]
+        total += card_values[card[0]]
     # If the hand contains an Ace and the total is over 21, count the Ace as 1 instead of 11
     for card in hand:
-        if card == 'Ace' and total > 21:
+        if card[0] == 'Ace' and total > 21:
             total -= 10
     return total
 
 # Define a function to deal a new hand
 def deal_hand():
-    deck = card_deck * 4
+    deck = []
+    for suit in suits:
+        for rank in card_deck:
+            deck.append((rank, suit))
     random.shuffle(deck)
     player_hand = [deck.pop(), deck.pop()]
     dealer_hand = [deck.pop(), deck.pop()]
     return deck, player_hand, dealer_hand
+
+def printcard(st, card_images):
+    hand = str(st.session_state.player_cards[0])+" , "+str(st.session_state.player_cards[1])
+    dhand = str(st.session_state.dealer_cards[0])+" , "+str(st.session_state.dealer_cards[1])
+    col1, col2, col3, col4, col5, col6= st.columns([1,1,1,1,1,4])
+    # origin two card + to 5 
+    with col1: 
+        st.image(card_images[(st.session_state.player_cards[0][0], st.session_state.player_cards[0][1])].resize((125, 181)))
+    with col2: 
+        st.image(card_images[(st.session_state.player_cards[1][0], st.session_state.player_cards[1][1])].resize((125, 181)))
+    if(len(st.session_state.player_cards)==3):
+        hand += " , " + str(st.session_state.player_cards[2])
+        with col3: 
+            st.image(card_images[(st.session_state.player_cards[2][0], st.session_state.player_cards[2][1])].resize((125, 181)))
+    if(len(st.session_state.player_cards)==4):
+        hand += " , " + str(st.session_state.player_cards[3])
+        with col3: 
+            st.image(card_images[(st.session_state.player_cards[2][0], st.session_state.player_cards[2][1])].resize((125, 181)))
+        with col4: 
+            st.image(card_images[(st.session_state.player_cards[3][0], st.session_state.player_cards[3][1])].resize((125, 181)))
+    if(len(st.session_state.player_cards)==5):
+        hand += " , " + str(st.session_state.player_cards[4])
+        with col3: 
+            st.image(card_images[(st.session_state.player_cards[2][0], st.session_state.player_cards[2][1])].resize((125, 181)))
+        with col4: 
+            st.image(card_images[(st.session_state.player_cards[3][0], st.session_state.player_cards[3][1])].resize((125, 181)))
+        with col5: 
+            st.image(card_images[(st.session_state.player_cards[4][0], st.session_state.player_cards[4][1])].resize((125, 181)))
+    st.write("**Your hand:**",  hand,"(", st.session_state.player_score, ")")
+    col1, col2, col3, col4, col5, col6 = st.columns([1,1,1,1,1,4])
+
+    with col1: 
+        st.image(card_images[(st.session_state.dealer_cards[0][0], st.session_state.player_cards[0][1])].resize((125, 181)))
+    with col2: 
+        st.image(card_images[(st.session_state.dealer_cards[1][0], st.session_state.player_cards[1][1])].resize((125, 181)))
+    if(len(st.session_state.dealer_cards)==3):
+        dhand += " , " + str(st.session_state.dealer_cards[2])
+        with col3: 
+            st.image(card_images[(st.session_state.dealer_cards[2][0], st.session_state.dealer_cards[2][1])].resize((125, 181)))
+    if(len(st.session_state.dealer_cards)==4):
+        dhand += " , " + str(st.session_state.dealer_cards[3])
+        with col4: 
+            st.image(card_images[(st.session_state.dealer_cards[3][0], st.session_state.dealer_cards[3][1])].resize((125, 181)))
+    if(len(st.session_state.dealer_cards)==5):
+        dhand += " , " + str(st.session_state.dealer_cards[4])
+        with col5: 
+            st.image(card_images[(st.session_state.dealer_cards[4][0], st.session_state.dealer_cards[4][1])].resize((125, 181)))
+
+    st.write("**Dealer's hand:**", dhand,"(", st.session_state.dealer_score, ")")
+
 
 st.set_page_config(page_title="Blackjack", page_icon=":spades:", layout="wide")
 st.title("Welcome to the Blackjack game!")
@@ -104,19 +157,18 @@ with placeholder.container():
         st.session_state.game_over = False
         
         if len(st.session_state.player_cards) <= 2:
-            st.write("**Your hand:**", st.session_state.player_cards[0], " , ", st.session_state.player_cards[1] , "(", st.session_state.player_score, ")")
             col1, col2, col3 = st.columns([1,1,7])
             with col1: 
-                st.image(card_images[(st.session_state.player_cards[0], random.choice(suits))].resize((125, 181)))
+                st.image(card_images[(st.session_state.player_cards[0][0], st.session_state.player_cards[0][1])].resize((125, 181)))
             with col2: 
-                st.image(card_images[(st.session_state.player_cards[1], random.choice(suits))].resize((125, 181)))
-            st.write("**Dealer's hand:**", st.session_state.dealer_cards[0], " , X")
+                st.image(card_images[(st.session_state.player_cards[1][0], st.session_state.player_cards[1][1])].resize((125, 181)))
+            st.write("**Your hand:**", str(st.session_state.player_cards[0]), " , ", str(st.session_state.player_cards[1]) , "(", st.session_state.player_score, ")")
             col1, col2, col3 = st.columns([1,1,7])
             with col1: 
-                st.image(card_images[(st.session_state.dealer_cards[0], random.choice(suits))].resize((125, 181)))
+                st.image(card_images[(st.session_state.dealer_cards[0][0], st.session_state.player_cards[0][1])].resize((125, 181)))
             with col2: 
                 st.image(sp.resize((125, 181)))
-            
+            st.write("**Dealer's hand:**", str(st.session_state.dealer_cards[0]), " , X")
 
         if st.session_state.player_score == 21:
             st.session_state.player_score = calculate_hand(st.session_state.player_cards)
@@ -129,19 +181,7 @@ with placeholder.container():
                     st.session_state.player_cards.append(st.session_state.deck.pop())
                     st.session_state.player_score = calculate_hand(st.session_state.player_cards)
                     st.empty()
-                    st.write("**Your hand:**", st.session_state.player_cards[0], " , ", st.session_state.player_cards[1] , "(", st.session_state.player_score, ")")
-                    col1, col2, col3 = st.columns([1,1,7])
-                    with col1: 
-                        st.image(card_images[(st.session_state.player_cards[0], random.choice(suits))].resize((125, 181)))
-                    with col2: 
-                        st.image(card_images[(st.session_state.player_cards[1], random.choice(suits))].resize((125, 181)))
-                    st.write("**Dealer's hand:**", st.session_state.dealer_cards[0], "  , X" , "(", st.session_state.dealer_score, ")")
-                    col1, col2, col3 = st.columns([1,1,7])
-                    with col1: 
-                        st.image(card_images[(st.session_state.dealer_cards[0], random.choice(suits))].resize((125, 181)))
-                    with col2: 
-                        st.image(card_images[(st.session_state.dealer_cards[1], random.choice(suits))].resize((125, 181)))
-            
+                    printcard(st, card_images)
                     if st.session_state.player_score > 21:
                         st.error("Bust! You lose!")
                         game_over = True
@@ -157,19 +197,7 @@ with placeholder.container():
                         st.session_state.dealer_cards.append(st.session_state.deck.pop())
                         st.session_state.dealer_score = calculate_hand(st.session_state.dealer_cards)
                     st.empty()
-                    st.write("**Your hand:**", st.session_state.player_cards[0], " , ", st.session_state.player_cards[1] , "(", st.session_state.player_score, ")")
-                    col1, col2, col3 = st.columns([1,1,7])
-                    with col1: 
-                        st.image(card_images[(st.session_state.player_cards[0], random.choice(suits))].resize((125, 181)))
-                    with col2: 
-                        st.image(card_images[(st.session_state.player_cards[1], random.choice(suits))].resize((125, 181)))
-                    st.write("**Dealer's hand:**", st.session_state.dealer_cards[0], " , ", st.session_state.dealer_cards[1] , "(", st.session_state.dealer_score, ")")
-                    col1, col2, col3 = st.columns([1,1,7])
-                    with col1: 
-                        st.image(card_images[(st.session_state.dealer_cards[0], random.choice(suits))].resize((125, 181)))
-                    with col2: 
-                        st.image(card_images[(st.session_state.dealer_cards[1], random.choice(suits))].resize((125, 181)))
-            
+                    printcard(st, card_images)
                     if st.session_state.dealer_score > 21:
                         st.success("Dealer bust! You win!")
                         game_over = True
@@ -198,18 +226,7 @@ with placeholder.container():
                     st.session_state.player_cards.append(st.session_state.deck.pop())
                     st.session_state.player_score = calculate_hand(st.session_state.player_cards)
                     st.empty()
-                    st.write("**Your hand:**", st.session_state.player_cards[0], " , ", st.session_state.player_cards[1] , "(", st.session_state.player_score, ")")
-                    col1, col2, col3 = st.columns([1,1,7])
-                    with col1: 
-                        st.image(card_images[(st.session_state.player_cards[0], random.choice(suits))].resize((125, 181)))
-                    with col2: 
-                        st.image(card_images[(st.session_state.player_cards[1], random.choice(suits))].resize((125, 181)))
-                    st.write("**Dealer's hand:**", st.session_state.dealer_cards[0], " , X")
-                    col1, col2, col3 = st.columns([1,1,7])
-                    with col1: 
-                        st.image(card_images[(st.session_state.dealer_cards[0], random.choice(suits))].resize((125, 181)))
-                    with col2: 
-                        st.image(sp.resize((125, 181)))
+                    printcard(st, card_images)
             
                     if st.session_state.player_score > 21:
                         st.error("Bust! You lose!")
@@ -227,19 +244,8 @@ with placeholder.container():
                         st.session_state.dealer_cards.append(st.session_state.deck.pop())
                         st.session_state.dealer_score = calculate_hand(st.session_state.dealer_cards)
                     st.empty()
-                    st.write("**Your hand:**", st.session_state.player_cards[0], " , ", st.session_state.player_cards[1] , "(", st.session_state.player_score, ")")
-                    col1, col2, col3 = st.columns([1,1,7])
-                    with col1: 
-                        st.image(card_images[(st.session_state.player_cards[0], random.choice(suits))].resize((125, 181)))
-                    with col2: 
-                        st.image(card_images[(st.session_state.player_cards[1], random.choice(suits))].resize((125, 181)))
-                    st.write("**Dealer's hand:**", st.session_state.dealer_cards[0], " , ", st.session_state.dealer_cards[1] , "(", st.session_state.dealer_score, ")")
-                    col1, col2, col3 = st.columns([1,1,7])
-                    with col1: 
-                        st.image(card_images[(st.session_state.dealer_cards[0], random.choice(suits))].resize((125, 181)))
-                    with col2: 
-                        st.image(card_images[(st.session_state.dealer_cards[1], random.choice(suits))].resize((125, 181)))
-            
+                    printcard(st, card_images)
+
                     if st.session_state.dealer_score > 21:
                         st.success("Dealer bust! You win!")
                         game_over = True
