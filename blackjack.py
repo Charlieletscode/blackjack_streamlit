@@ -29,7 +29,7 @@ def calculate_hand(hand):
         total += card_values[card[0]]
     # If the hand contains an Ace and the total is over 21, count the Ace as 1 instead of 11
     for card in hand:
-        if card[0] == 'Ace' and total > 21:
+        if card[0] == 'ace' and total > 21:
             total -= 10
     return total
 
@@ -84,10 +84,16 @@ def printcard(st, card_images):
             st.image(card_images[(st.session_state.dealer_cards[2][0], st.session_state.dealer_cards[2][1])].resize((125, 181)))
     if(len(st.session_state.dealer_cards)==4):
         dhand += " , " + str(st.session_state.dealer_cards[3])
+        with col3: 
+            st.image(card_images[(st.session_state.dealer_cards[2][0], st.session_state.dealer_cards[2][1])].resize((125, 181)))
         with col4: 
             st.image(card_images[(st.session_state.dealer_cards[3][0], st.session_state.dealer_cards[3][1])].resize((125, 181)))
     if(len(st.session_state.dealer_cards)==5):
         dhand += " , " + str(st.session_state.dealer_cards[4])
+        with col3: 
+            st.image(card_images[(st.session_state.dealer_cards[2][0], st.session_state.dealer_cards[2][1])].resize((125, 181)))
+        with col4: 
+            st.image(card_images[(st.session_state.dealer_cards[3][0], st.session_state.dealer_cards[3][1])].resize((125, 181)))
         with col5: 
             st.image(card_images[(st.session_state.dealer_cards[4][0], st.session_state.dealer_cards[4][1])].resize((125, 181)))
 
@@ -215,49 +221,50 @@ with placeholder.container():
                         game_over = True
     #directly start after shuffling
     else:
-        if st.session_state.player_score == 21:
-            st.session_state.player_score = calculate_hand(st.session_state.player_cards)
-            st.empty()
-            st.success("Blackjack! You win!")
-            game_over = True
-        else:
-            if not st.session_state.game_over:
-                if(st.session_state.Hit):
-                    st.session_state.player_cards.append(st.session_state.deck.pop())
-                    st.session_state.player_score = calculate_hand(st.session_state.player_cards)
-                    st.empty()
-                    printcard(st, card_images)
-            
-                    if st.session_state.player_score > 21:
-                        st.error("Bust! You lose!")
-                        st.session_state.game_over = True
-                        st.session_state.hit = False
-                        st.session_state.stand = False
-                    elif st.session_state.player_score == 21:
+        if st.session_state.player_score > 0:
+            if st.session_state.player_score == 21:
+                st.session_state.player_score = calculate_hand(st.session_state.player_cards)
+                st.empty()
+                st.success("Blackjack! You win!")
+                game_over = True
+            else:
+                if not st.session_state.game_over:
+                    if(st.session_state.Hit):
+                        st.session_state.player_cards.append(st.session_state.deck.pop())
                         st.session_state.player_score = calculate_hand(st.session_state.player_cards)
-                        st.success("Blackjack! You win!")
-                        st.session_state.game_over = True
-                        st.session_state.hit = False
-                        st.session_state.stand = False
-                elif (st.session_state.Stand):
-                    while st.session_state.dealer_score < 17:
-                        st.session_state.dealer_cards.append(st.session_state.deck.pop())
-                        st.session_state.dealer_score = calculate_hand(st.session_state.dealer_cards)
-                    st.empty()
-                    printcard(st, card_images)
+                        st.empty()
+                        printcard(st, card_images)
+                
+                        if st.session_state.player_score > 21:
+                            st.error("Bust! You lose!")
+                            st.session_state.game_over = True
+                            st.session_state.hit = False
+                            st.session_state.stand = False
+                        elif st.session_state.player_score == 21:
+                            st.session_state.player_score = calculate_hand(st.session_state.player_cards)
+                            st.success("Blackjack! You win!")
+                            st.session_state.game_over = True
+                            st.session_state.hit = False
+                            st.session_state.stand = False
+                    elif (st.session_state.Stand):
+                        while st.session_state.dealer_score < 17:
+                            st.session_state.dealer_cards.append(st.session_state.deck.pop())
+                            st.session_state.dealer_score = calculate_hand(st.session_state.dealer_cards)
+                        st.empty()
+                        printcard(st, card_images)
 
-                    if st.session_state.dealer_score > 21:
-                        st.success("Dealer bust! You win!")
-                        game_over = True
-                    elif st.session_state.dealer_score == 21:
-                        st.error("Dealer got Blackjack! You lose!")
-                        game_over = True
-                    elif st.session_state.dealer_score > st.session_state.player_score:
-                        st.error("You lose!")
-                        game_over = True
-                    elif st.session_state.dealer_score < st.session_state.player_score:
-                        st.success("You win!")
-                        game_over = True
-                    else:
-                        st.warning("It's a tie!")
-                        game_over = True
+                        if st.session_state.dealer_score > 21:
+                            st.success("Dealer bust! You win!")
+                            game_over = True
+                        elif st.session_state.dealer_score == 21:
+                            st.error("Dealer got Blackjack! You lose!")
+                            game_over = True
+                        elif st.session_state.dealer_score > st.session_state.player_score:
+                            st.error("You lose!")
+                            game_over = True
+                        elif st.session_state.dealer_score < st.session_state.player_score:
+                            st.success("You win!")
+                            game_over = True
+                        else:
+                            st.warning("It's a tie!")
+                            game_over = True
